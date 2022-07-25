@@ -135,15 +135,12 @@ defer 和 async 的区别是：defer 是在整个页面正常渲染结束后(DOM
 
 众所周知，JavaScript 是单线程的，当页面合成时，合成器线程会标记页面中绑定事件处理器的区域为非快速滚动区域(non-fast scrollable region)，合成器线程会把发生在此处的事件发送给主线程。如果事件没有发生在这些区域，则合成器线程会直接合成新的帧，而不用等主线程的响应。在 Web 开发中，常用的事件处理是事件委托，基于事件冒泡和捕捉机制。在实际开发中，我们常常在 body 上绑定事件：
 
+```
 document.body.addEventListener('touchstart',event =>｛
-
     if (event.target ==area){
-
     event.preventDefault();
-
-    ｝
-
-});
+    }});
+```
 
 DOM 二级事件规定的事件流包含三个阶段：事件捕获阶段、处于目标阶段和事件冒泡阶段。
 
@@ -151,35 +148,31 @@ DOM 二级事件规定的事件流包含三个阶段：事件捕获阶段、处�
 
 为了优化，我们可以为事件处理函数传递 passive:true 参数，这样浏览器就能既监听相关事件，又能让组合器线程在等主线程响应前构建新的组合帧了：
 
-document.body.addEventListener(＇touchstart＇，event =＞ ｛
-
-    if (event.target ===area)｛
-
+```
+document.body.addEventListener(＇touchstart＇，event =＞ {
+    if (event.target ===area){
     event.preventDefault()
-
-    ｝
-
-)(passive:true));
+    })
+(passive:true));
+```
 
 不过上述写法可能会带来另一个问题，假设某个区域只想横向滚动，则使用 passive:true 可以实现平滑滚动，但是垂直方向的滚动可能会早于 eventpreventDefa 的执行，这时就需要通过 event.cancelable 来阻止这种情况的发生：
 
+```
 docuent.body.addEventListeer(‘pointermove’, event =>{
-
     if (event.cancelable){
-
     event.preventDefault();//阻止滚动
-
-    ｝
-
-},｛passive:true｝);
+    },
+{passive:true});
+```
 
 另外，可以通过 CSS 样式实现：
 
+```
 #area{
-
     touch-action: pan-x;
-
 }
+```
 
 ### 10.查找事件源
 
@@ -191,18 +184,12 @@ docuent.body.addEventListeer(‘pointermove’, event =>{
 
 而如 keydown、keyup、mouseup、mousdown，touchstart 和 touchend 等非连续性事件则会被触发。合并事件虽然能提升性能，但如果是绘画等应用，则很难绘制一条平滑的曲线，此时可以使用 getCoalescedEvents API 来获取组合事件，示例代码如下：
 
+```
 window.addEventListener(＇pointermove＇，event =＞{
-
     const events =event.getCoalescedEvents();
-
-    for (let event of events)｛
-
+    for (let event of events){
     const x = event.pageX;
-
     const y  = event.pageY;
-
     //draw a line using x and y coordinates.
-
-    }
-
-});
+    }});
+```
